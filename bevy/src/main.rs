@@ -1,41 +1,21 @@
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts, EguiPlugin};
 
-pub struct HelloPlugin;
-
-impl Plugin for HelloPlugin {
-    fn build(&self, app: &mut App) {
-        app.insert_resource(GreetTimer(Timer::from_seconds(2.0, TimerMode::Repeating)))
-            .add_systems(Startup, add_people)
-            .add_systems(Update, greet_people);
-    }
+#[derive(Debug, PartialEq, Resource)]
+enum Stage {
+    One,
+    Two
 }
 
-#[derive(Component)]
-struct Person;
-
-#[derive(Component)]
-struct Name(String);
-
-#[derive(Resource)]
-struct GreetTimer(Timer);
-
-fn add_people(mut commands: Commands) {
-    commands.spawn((Person, Name("Foo".to_string())));
-    commands.spawn((Person, Name("Bar".to_string())));
-    commands.spawn((Person, Name("Baz".to_string())));
-}
-
-fn greet_people(time: Res<Time>, mut timer: ResMut<GreetTimer>, query: Query<&Name, With<Person>>) {
-    if timer.0.tick(time.delta()).just_finished() {
-        for name in &query {
-            println!("hello {}.", name.0);
-        }
-    }
-}
-
-fn ui_example_system(mut contexts: EguiContexts){
-    egui::Window::new("Hello").show(contexts.ctx_mut(), |ui| {
+fn ui_level_selector(mut selected: ResMut<Stage>, mut contexts: EguiContexts){
+    egui::Window::new("Debug Menu").show(contexts.ctx_mut(), |ui| {
+        egui::ComboBox::from_label("combobox")
+            .selected_text(format!("Level {selected:?}"))
+            .show_ui(ui, |ui| {
+                ui.selectable_value(selected.as_mut(), Stage::One, "one");
+                ui.selectable_value(selected.as_mut(), Stage::Two, "two");
+            });
+        ui.end_row();
         ui.label("world");
     });
 }
@@ -43,8 +23,8 @@ fn ui_example_system(mut contexts: EguiContexts){
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        // .add_plugins(HelloPlugin)
         .add_plugins(EguiPlugin)
-        .add_systems(Update, ui_example_system)
+        .insert_resource(Stage::One)
+        .add_systems(Update, ui_level_selector)
         .run();
 }
