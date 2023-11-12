@@ -4,10 +4,10 @@ use bevy_egui::{egui, EguiContexts, EguiPlugin};
 #[derive(Debug, PartialEq, Resource)]
 enum Stage {
     One,
-    Two
+    Two,
 }
 
-fn ui_level_selector(mut selected: ResMut<Stage>, mut contexts: EguiContexts){
+fn ui_level_selector(mut selected: ResMut<Stage>, mut contexts: EguiContexts) {
     egui::Window::new("Debug Menu").show(contexts.ctx_mut(), |ui| {
         egui::ComboBox::from_label("combobox")
             .selected_text(format!("Level {selected:?}"))
