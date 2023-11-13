@@ -30,6 +30,9 @@ fn ui_level_selector(
     });
 }
 
+#[derive(Component)]
+struct PlayerShip;
+
 fn spawn_assets(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
     // spawn a camera
     commands.spawn(Camera3dBundle {
@@ -38,10 +41,29 @@ fn spawn_assets(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
     });
 
     // spawn a pill
-    commands.spawn(PbrBundle {
-        mesh: meshes.add(shape::Capsule::default().into()),
-        ..default()
-    });
+    commands
+        .spawn(PbrBundle {
+            mesh: meshes.add(shape::Capsule::default().into()),
+            ..default()
+        })
+        .insert(PlayerShip);
+}
+
+fn ship_controller(
+    kb_input: Res<Input<KeyCode>>,
+    mut ship: Query<&mut Transform, With<PlayerShip>>,
+) {
+    assert_eq!(
+        ship.iter().len(),
+        1,
+        "There should only be one player-controlled ship"
+    );
+
+    if kb_input.pressed(KeyCode::F) {
+        for mut transform in &mut ship {
+            transform.rotate_local_x(1.);
+        }
+    }
 }
 
 fn main() {
@@ -52,5 +74,6 @@ fn main() {
         .add_state::<Level>()
         .add_systems(Startup, spawn_assets)
         .add_systems(Update, ui_level_selector)
+        .add_systems(Update, ship_controller)
         .run();
 }
