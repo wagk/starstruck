@@ -29,32 +29,18 @@ fn ui_level_selector(
     });
 }
 
-fn entering_stage_1(){
-    println!("Entering stage 1");
-}
+fn spawn_assets(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
+    // spawn a camera
+    commands.spawn(Camera3dBundle {
+        transform: Transform::from_xyz(0., 6., 12.).looking_at(Vec3::new(0., 1., 0.), Vec3::Y),
+        ..default()
+    });
 
-fn exiting_stage_1(){
-    println!("Exiting stage 1");
-}
-
-fn entering_stage_2(){
-    println!("Entering stage 2");
-}
-
-fn exiting_stage_2(){
-    println!("Exiting stage 2");
-}
-
-fn spawn_basics() {
-    // todo!()
-}
-
-fn stage_1() {
-    // todo!()
-}
-
-fn stage_2() {
-    // todo!()
+    // spawn a pill
+    commands.spawn(PbrBundle {
+        mesh: meshes.add(shape::Capsule::default().into()),
+        ..default()
+    });
 }
 
 fn main() {
@@ -62,13 +48,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugins(EguiPlugin)
         .add_state::<Level>()
-        .add_systems(Startup, spawn_basics)
-        .add_systems(OnEnter(Level::One), entering_stage_1)
-        .add_systems(OnExit(Level::One), exiting_stage_1)
-        .add_systems(OnEnter(Level::Two), entering_stage_2)
-        .add_systems(OnExit(Level::Two), exiting_stage_2)
+        .add_systems(Startup, spawn_assets)
         .add_systems(Update, ui_level_selector)
-        .add_systems(Update, stage_1.run_if(in_state(Level::One)))
-        .add_systems(Update, stage_2.run_if(in_state(Level::Two)))
         .run();
 }
