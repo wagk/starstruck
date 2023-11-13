@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts, EguiPlugin};
+use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 #[derive(Debug, Clone, Eq, Hash, PartialEq, States, Default)]
 enum Level {
@@ -47,6 +48,7 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugins(EguiPlugin)
+        .add_plugins(WorldInspectorPlugin::new())
         .add_state::<Level>()
         .add_systems(Startup, spawn_assets)
         .add_systems(Update, ui_level_selector)
