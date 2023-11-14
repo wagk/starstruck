@@ -49,8 +49,13 @@ fn spawn_player_assets(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>)
         .insert(PlayerShip);
 }
 
+fn spawn_asteroids(mut _commands: Commands, mut _meshes: ResMut<Assets<Mesh>>){
+    // TODO (pangt):
+}
+
 fn ship_controller(
     kb_input: Res<Input<KeyCode>>,
+    // TODO (pangt): mouse input here, once we get the asteroids up
     mut ship: Query<&mut Transform, With<PlayerShip>>,
 ) {
     assert_eq!(
@@ -97,6 +102,7 @@ fn main() {
         .add_plugins(WorldInspectorPlugin::new())
         .add_state::<Level>()
         .add_systems(Startup, spawn_player_assets)
+        .add_systems(Startup, spawn_asteroids)
         .add_systems(Update, ui_level_selector)
         .add_systems(Update, ship_controller)
         .run();
