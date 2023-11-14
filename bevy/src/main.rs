@@ -33,7 +33,7 @@ fn ui_level_selector(
 #[derive(Component)]
 struct PlayerShip;
 
-fn spawn_assets(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
+fn spawn_player_assets(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
     // spawn a camera
     commands.spawn(Camera3dBundle {
         transform: Transform::from_xyz(0., 6., 12.).looking_at(Vec3::new(0., 1., 0.), Vec3::Y),
@@ -43,7 +43,7 @@ fn spawn_assets(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
     // spawn a pill
     commands
         .spawn(PbrBundle {
-            mesh: meshes.add(shape::Capsule::default().into()),
+            mesh: meshes.add(shape::Cube::default().into()),
             ..default()
         })
         .insert(PlayerShip);
@@ -59,9 +59,33 @@ fn ship_controller(
         "There should only be one player-controlled ship"
     );
 
-    if kb_input.pressed(KeyCode::F) {
-        for mut transform in &mut ship {
-            transform.rotate_local_x(1.);
+    for mut transform in &mut ship {
+        if kb_input.pressed(KeyCode::E) {
+            let forward = transform.forward();
+            transform.translation += forward;
+        }
+
+        if kb_input.pressed(KeyCode::S) {
+            let left = transform.left();
+            transform.translation += left;
+        }
+
+        if kb_input.pressed(KeyCode::D) {
+            let back = transform.back();
+            transform.translation += back;
+        }
+
+        if kb_input.pressed(KeyCode::F) {
+            let right = transform.right();
+            transform.translation += right;
+        }
+
+        if kb_input.pressed(KeyCode::W) {
+            transform.rotate_local(Quat::from_rotation_z(0.1));
+        }
+
+        if kb_input.pressed(KeyCode::R) {
+            transform.rotate_local(Quat::from_rotation_z(-0.1));
         }
     }
 }
@@ -72,7 +96,7 @@ fn main() {
         .add_plugins(EguiPlugin)
         .add_plugins(WorldInspectorPlugin::new())
         .add_state::<Level>()
-        .add_systems(Startup, spawn_assets)
+        .add_systems(Startup, spawn_player_assets)
         .add_systems(Update, ui_level_selector)
         .add_systems(Update, ship_controller)
         .run();
