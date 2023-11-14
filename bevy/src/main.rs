@@ -17,7 +17,7 @@ fn ui_level_selector(
     egui::Window::new("Debug Menu").show(contexts.ctx_mut(), |ui| {
         let mut stage = curr_stage.as_mut().get().clone();
         egui::ComboBox::from_label("combobox")
-            .selected_text(format!("Level Selection"))
+            .selected_text("Level Selection".to_string())
             .show_ui(ui, |ui| {
                 ui.selectable_value(&mut stage, Level::One, "one");
                 ui.selectable_value(&mut stage, Level::Two, "two");
