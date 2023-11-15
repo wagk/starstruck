@@ -1,0 +1,3 @@
+- [ ] 2023-11-15 Add button to debug menu to regenerate a scene.
+- [ ] 2023-11-15 Make the camera follow the ship.
+- [ ] 2023-11-15 Implement collision between ship and asteroids.
