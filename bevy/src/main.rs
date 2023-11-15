@@ -50,8 +50,24 @@ fn spawn_player_assets(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>)
         .insert(PlayerShip);
 }
 
-fn spawn_asteroids(mut _commands: Commands, mut _meshes: ResMut<Assets<Mesh>>){
-    // TODO (pangt):
+fn spawn_asteroids(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
+    const NUM_ASTEROIDS: usize = 5;
+
+    let asteroid = meshes.add(shape::Cube::default().into());
+
+    for _ in 0..NUM_ASTEROIDS {
+        let [i, j, k] = rand::random::<[f32; 3]>();
+        commands.spawn(PbrBundle {
+            mesh: asteroid.clone(),
+            transform: Transform::from_translation(
+                // Update center
+                Vec3::from(rand::random::<[f32; 3]>()) * 5. - 2.5,
+            )
+            .with_rotation(Quat::from_euler(EulerRot::XYZ, i, j, k))
+            .with_scale(Vec3::new(0.5, 0.5, 0.5)),
+            ..default()
+        });
+    }
 }
 
 fn main() {
