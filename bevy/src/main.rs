@@ -5,6 +5,7 @@ use ship::{ship_controller, PlayerShip};
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts, EguiPlugin};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
+use bevy_rapier3d::prelude::*;
 
 #[derive(Debug, Clone, Eq, Hash, PartialEq, States, Default)]
 enum Level {
@@ -42,13 +43,15 @@ fn spawn_player_assets(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>,
     });
 
     // spawn a pill
-    commands
-        .spawn(PbrBundle {
+    commands.spawn((
+        PbrBundle {
             mesh: meshes.add(shape::Cube::default().into()),
             material: materials.add(Color::AQUAMARINE.into()),
             ..default()
-        })
-        .insert(PlayerShip);
+        },
+        PlayerShip,
+        Collider::cuboid(1., 1., 1.),
+    ));
 }
 
 fn spawn_asteroids(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
@@ -75,6 +78,8 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugins(EguiPlugin)
+        .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
+        .add_plugins(RapierDebugRenderPlugin::default())
         .add_plugins(WorldInspectorPlugin::new())
         .add_state::<Level>()
         .add_systems(Startup, spawn_player_assets)
