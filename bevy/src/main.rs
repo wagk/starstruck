@@ -47,7 +47,7 @@ fn spawn_player_assets(
     });
 
     // spawn a pill
-    commands.spawn((
+    let ent = commands.spawn((
         PbrBundle {
             mesh: meshes.add(shape::Cube::default().into()),
             material: materials.add(Color::AQUAMARINE.into()),
@@ -55,7 +55,11 @@ fn spawn_player_assets(
         },
         PlayerShip,
         Collider::cuboid(1., 1., 1.),
+        ActiveCollisionTypes::STATIC_STATIC,
+        ActiveEvents::COLLISION_EVENTS
     ));
+
+    println!("Ship has entity ID of {:?}", ent.id());
 }
 
 fn spawn_asteroids(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
@@ -65,16 +69,36 @@ fn spawn_asteroids(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
 
     for _ in 0..NUM_ASTEROIDS {
         let [i, j, k] = rand::random::<[f32; 3]>();
-        commands.spawn(PbrBundle {
-            mesh: asteroid.clone(),
-            transform: Transform::from_translation(
-                // Update center
-                Vec3::from(rand::random::<[f32; 3]>()) * 5. - 2.5,
-            )
-            .with_rotation(Quat::from_euler(EulerRot::XYZ, i, j, k))
-            .with_scale(Vec3::new(0.5, 0.5, 0.5)),
-            ..default()
-        });
+        commands.spawn((
+            PbrBundle {
+                mesh: asteroid.clone(),
+                transform: Transform::from_translation(
+                    // Update center
+                    Vec3::from(rand::random::<[f32; 3]>()) * 5. - 2.5,
+                )
+                .with_rotation(Quat::from_euler(EulerRot::XYZ, i, j, k))
+                .with_scale(Vec3::new(0.5, 0.5, 0.5)),
+                ..default()
+            },
+            Collider::cuboid(0.5, 0.5, 0.5),
+            ActiveCollisionTypes::STATIC_STATIC,
+            ActiveEvents::COLLISION_EVENTS
+        ));
+    }
+}
+
+fn display_collision_events(
+    mut collision_events: EventReader<CollisionEvent>
+) {
+    for e in collision_events.read() {
+        match e {
+            CollisionEvent::Started(e1, e2, _flags) => {
+                println!("{e1:?} began collision with {e2:?}");
+            }
+            CollisionEvent::Stopped(e1, e2, _flags) => {
+                println!("{e1:?} ended collision with {e2:?}");
+            }
+        }
     }
 }
 
@@ -90,5 +114,6 @@ fn main() {
         .add_systems(Startup, spawn_asteroids)
         .add_systems(Update, ui_level_selector)
         .add_systems(Update, ship_controller)
+        .add_systems(Update, display_collision_events)
         .run();
 }
