@@ -14,12 +14,17 @@ enum Level {
     Two,
 }
 
+#[derive(Event)]
+struct RegenerateAsteroids;
+
 fn ui_level_selector(
     mut curr_stage: ResMut<State<Level>>,
     mut selected: ResMut<NextState<Level>>,
     mut contexts: EguiContexts,
+    mut should_reload: EventWriter<RegenerateAsteroids>
 ) {
     egui::Window::new("Debug Menu").show(contexts.ctx_mut(), |ui| {
+        // Stage select
         let mut stage = curr_stage.as_mut().get().clone();
         egui::ComboBox::from_label("combobox")
             .selected_text("Level Selection".to_string())
@@ -32,6 +37,11 @@ fn ui_level_selector(
         }
         ui.end_row();
         ui.label("world");
+
+        // Reload scene
+        if ui.button("Reload").clicked() {
+            should_reload.send(RegenerateAsteroids);
+        }
     });
 }
 
@@ -102,18 +112,26 @@ fn display_collision_events(
     }
 }
 
+fn maybe_regenerate_asteroids(mut event: EventReader<RegenerateAsteroids>){
+    for _ in event.read() {
+        println!("I should shuffle asteroids");
+    }
+}
+
 fn main() {
     App::new()
+        .add_state::<Level>()
+        .add_event::<RegenerateAsteroids>()
         .add_plugins(DefaultPlugins)
         .add_plugins(EguiPlugin)
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugins(RapierDebugRenderPlugin::default())
         .add_plugins(WorldInspectorPlugin::new())
-        .add_state::<Level>()
         .add_systems(Startup, spawn_player_assets)
         .add_systems(Startup, spawn_asteroids)
         .add_systems(Update, ui_level_selector)
         .add_systems(Update, ship_controller)
         .add_systems(Update, display_collision_events)
+        .add_systems(Last, maybe_regenerate_asteroids)
         .run();
 }
