@@ -34,7 +34,7 @@ fn ui_level_selector(
     mut curr_stage: ResMut<State<Level>>,
     mut selected: ResMut<NextState<Level>>,
     mut contexts: EguiContexts,
-    mut should_reload: EventWriter<RegenerateAsteroids>
+    mut should_reload: EventWriter<RegenerateAsteroids>,
 ) {
     egui::Window::new("Debug Menu").show(contexts.ctx_mut(), |ui| {
         // Stage select
@@ -79,7 +79,7 @@ fn spawn_player_assets(
         PlayerShip,
         Collider::cuboid(1., 1., 1.),
         ActiveCollisionTypes::STATIC_STATIC,
-        ActiveEvents::COLLISION_EVENTS
+        ActiveEvents::COLLISION_EVENTS,
     ));
 
     println!("Ship has entity ID of {:?}", ent.id());
@@ -100,14 +100,12 @@ fn spawn_asteroids(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
             Asteroid,
             Collider::cuboid(0.5, 0.5, 0.5),
             ActiveCollisionTypes::STATIC_STATIC,
-            ActiveEvents::COLLISION_EVENTS
+            ActiveEvents::COLLISION_EVENTS,
         ));
     }
 }
 
-fn display_collision_events(
-    mut collision_events: EventReader<CollisionEvent>
-) {
+fn display_collision_events(mut collision_events: EventReader<CollisionEvent>) {
     for e in collision_events.read() {
         match e {
             CollisionEvent::Started(e1, e2, _flags) => {
