@@ -11,5 +11,7 @@
 
 - [x] 2023-11-15 2023-11-17 Implement collision between ship and asteroids.
   - [x] 2023-11-16 Add collision to ship
-- [ ] 2023-11-18 Actually shuffle the asteroids when the appropriate event is
+- [x] 2023-11-18 Actually shuffle the asteroids when the appropriate event is
       received.
+- [ ] 2023-11-19 Don't shuffle asteroids into positions that collide with the
+      ship.

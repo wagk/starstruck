@@ -17,6 +17,19 @@ enum Level {
 #[derive(Event)]
 struct RegenerateAsteroids;
 
+#[derive(Component)]
+struct Asteroid;
+
+fn random_asteroid_transform() -> Transform {
+    let [i, j, k] = rand::random::<[f32; 3]>();
+    Transform::from_translation(
+        // Update center
+        Vec3::from(rand::random::<[f32; 3]>()) * 5. - 2.5,
+    )
+    .with_rotation(Quat::from_euler(EulerRot::XYZ, i, j, k))
+    .with_scale(Vec3::new(0.5, 0.5, 0.5))
+}
+
 fn ui_level_selector(
     mut curr_stage: ResMut<State<Level>>,
     mut selected: ResMut<NextState<Level>>,
@@ -39,7 +52,7 @@ fn ui_level_selector(
         ui.label("world");
 
         // Reload scene
-        if ui.button("Reload").clicked() {
+        if ui.button("Shuffle Asteroids").clicked() {
             should_reload.send(RegenerateAsteroids);
         }
     });
@@ -78,18 +91,13 @@ fn spawn_asteroids(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
     let asteroid = meshes.add(shape::Cube::default().into());
 
     for _ in 0..NUM_ASTEROIDS {
-        let [i, j, k] = rand::random::<[f32; 3]>();
         commands.spawn((
             PbrBundle {
                 mesh: asteroid.clone(),
-                transform: Transform::from_translation(
-                    // Update center
-                    Vec3::from(rand::random::<[f32; 3]>()) * 5. - 2.5,
-                )
-                .with_rotation(Quat::from_euler(EulerRot::XYZ, i, j, k))
-                .with_scale(Vec3::new(0.5, 0.5, 0.5)),
+                transform: random_asteroid_transform(),
                 ..default()
             },
+            Asteroid,
             Collider::cuboid(0.5, 0.5, 0.5),
             ActiveCollisionTypes::STATIC_STATIC,
             ActiveEvents::COLLISION_EVENTS
@@ -112,9 +120,15 @@ fn display_collision_events(
     }
 }
 
-fn maybe_regenerate_asteroids(mut event: EventReader<RegenerateAsteroids>){
-    for _ in event.read() {
-        println!("I should shuffle asteroids");
+fn maybe_regenerate_asteroids(
+    mut events: EventReader<RegenerateAsteroids>,
+    mut asteroids: Query<&mut Transform, With<Asteroid>>,
+) {
+    if !events.is_empty() {
+        asteroids.for_each_mut(|mut transform| {
+            *transform = random_asteroid_transform();
+        });
+        events.clear();
     }
 }
 
