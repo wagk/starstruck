@@ -15,7 +15,13 @@ enum Level {
 }
 
 #[derive(Event)]
-struct RegenerateAsteroids;
+enum AsteroidUiEvent {
+    Shuffle,
+    Add(usize),
+}
+
+#[derive(Resource)]
+struct AsteroidMesh(Option<Handle<Mesh>>);
 
 #[derive(Component)]
 struct Asteroid;
@@ -30,11 +36,25 @@ fn random_asteroid_transform() -> Transform {
     .with_scale(Vec3::new(0.5, 0.5, 0.5))
 }
 
+fn make_asteroid(commands: &mut Commands, mesh: &Res<AsteroidMesh>) {
+    commands.spawn((
+        PbrBundle {
+            mesh: mesh.0.clone().unwrap(),
+            transform: random_asteroid_transform(),
+            ..default()
+        },
+        Asteroid,
+        Collider::cuboid(0.5, 0.5, 0.5),
+        ActiveCollisionTypes::STATIC_STATIC,
+        ActiveEvents::COLLISION_EVENTS,
+    ));
+}
+
 fn ui_level_selector(
     mut curr_stage: ResMut<State<Level>>,
     mut selected: ResMut<NextState<Level>>,
     mut contexts: EguiContexts,
-    mut should_reload: EventWriter<RegenerateAsteroids>,
+    mut should_reload: EventWriter<AsteroidUiEvent>,
 ) {
     egui::Window::new("Debug Menu").show(contexts.ctx_mut(), |ui| {
         // Stage select
@@ -53,7 +73,11 @@ fn ui_level_selector(
 
         // Reload scene
         if ui.button("Shuffle Asteroids").clicked() {
-            should_reload.send(RegenerateAsteroids);
+            should_reload.send(AsteroidUiEvent::Shuffle);
+        }
+
+        if ui.button("Add Asteroids").clicked() {
+            should_reload.send(AsteroidUiEvent::Add(1usize));
         }
     });
 }
@@ -85,23 +109,18 @@ fn spawn_player_assets(
     println!("Ship has entity ID of {:?}", ent.id());
 }
 
-fn spawn_asteroids(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
+fn spawn_asteroids(
+    mut commands: Commands,
+    mut asteroid: ResMut<AsteroidMesh>,
+    mut meshes: ResMut<Assets<Mesh>>,
+) {
     const NUM_ASTEROIDS: usize = 5;
 
-    let asteroid = meshes.add(shape::Cube::default().into());
+    asteroid.0 = Some(meshes.add(shape::Cube::default().into()));
+    let asteroid: Res<AsteroidMesh> = asteroid.into();
 
     for _ in 0..NUM_ASTEROIDS {
-        commands.spawn((
-            PbrBundle {
-                mesh: asteroid.clone(),
-                transform: random_asteroid_transform(),
-                ..default()
-            },
-            Asteroid,
-            Collider::cuboid(0.5, 0.5, 0.5),
-            ActiveCollisionTypes::STATIC_STATIC,
-            ActiveEvents::COLLISION_EVENTS,
-        ));
+        make_asteroid(&mut commands, &asteroid);
     }
 }
 
@@ -119,21 +138,32 @@ fn display_collision_events(mut collision_events: EventReader<CollisionEvent>) {
 }
 
 fn maybe_regenerate_asteroids(
-    mut events: EventReader<RegenerateAsteroids>,
+    mut events: EventReader<AsteroidUiEvent>,
+    mut commands: Commands,
+    mesh: Res<AsteroidMesh>,
     mut asteroids: Query<&mut Transform, With<Asteroid>>,
 ) {
-    if !events.is_empty() {
-        asteroids.for_each_mut(|mut transform| {
-            *transform = random_asteroid_transform();
-        });
-        events.clear();
+    for e in events.read() {
+        match e {
+            AsteroidUiEvent::Shuffle => {
+                asteroids.for_each_mut(|mut transform| {
+                    *transform = random_asteroid_transform();
+                });
+            }
+            AsteroidUiEvent::Add(n) => {
+                for _ in 0..*n {
+                    make_asteroid(&mut commands, &mesh)
+                }
+            }
+        }
     }
 }
 
 fn main() {
     App::new()
         .add_state::<Level>()
-        .add_event::<RegenerateAsteroids>()
+        .add_event::<AsteroidUiEvent>()
+        .insert_resource(AsteroidMesh(None))
         .add_plugins(DefaultPlugins)
         .add_plugins(EguiPlugin)
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
