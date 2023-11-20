@@ -1,5 +1,7 @@
+mod asteroid;
 mod ship;
 
+use asteroid::{maybe_regenerate_asteroids, spawn_asteroids, AsteroidMesh, AsteroidUiEvent};
 use ship::{ship_controller, PlayerShip};
 
 use bevy::prelude::*;
@@ -12,42 +14,6 @@ enum Level {
     #[default]
     One,
     Two,
-}
-
-#[derive(Event)]
-enum AsteroidUiEvent {
-    Shuffle,
-    Add(usize),
-}
-
-#[derive(Resource)]
-struct AsteroidMesh(Option<Handle<Mesh>>);
-
-#[derive(Component)]
-struct Asteroid;
-
-fn random_asteroid_transform() -> Transform {
-    let [i, j, k] = rand::random::<[f32; 3]>();
-    Transform::from_translation(
-        // Update center
-        Vec3::from(rand::random::<[f32; 3]>()) * 5. - 2.5,
-    )
-    .with_rotation(Quat::from_euler(EulerRot::XYZ, i, j, k))
-    .with_scale(Vec3::new(0.5, 0.5, 0.5))
-}
-
-fn make_asteroid(commands: &mut Commands, mesh: &Res<AsteroidMesh>) {
-    commands.spawn((
-        PbrBundle {
-            mesh: mesh.0.clone().unwrap(),
-            transform: random_asteroid_transform(),
-            ..default()
-        },
-        Asteroid,
-        Collider::cuboid(0.5, 0.5, 0.5),
-        ActiveCollisionTypes::STATIC_STATIC,
-        ActiveEvents::COLLISION_EVENTS,
-    ));
 }
 
 fn ui_level_selector(
@@ -109,21 +75,6 @@ fn spawn_player_assets(
     println!("Ship has entity ID of {:?}", ent.id());
 }
 
-fn spawn_asteroids(
-    mut commands: Commands,
-    mut asteroid: ResMut<AsteroidMesh>,
-    mut meshes: ResMut<Assets<Mesh>>,
-) {
-    const NUM_ASTEROIDS: usize = 5;
-
-    asteroid.0 = Some(meshes.add(shape::Cube::default().into()));
-    let asteroid: Res<AsteroidMesh> = asteroid.into();
-
-    for _ in 0..NUM_ASTEROIDS {
-        make_asteroid(&mut commands, &asteroid);
-    }
-}
-
 fn display_collision_events(mut collision_events: EventReader<CollisionEvent>) {
     for e in collision_events.read() {
         match e {
@@ -132,28 +83,6 @@ fn display_collision_events(mut collision_events: EventReader<CollisionEvent>) {
             }
             CollisionEvent::Stopped(e1, e2, _flags) => {
                 println!("{e1:?} ended collision with {e2:?}");
-            }
-        }
-    }
-}
-
-fn maybe_regenerate_asteroids(
-    mut events: EventReader<AsteroidUiEvent>,
-    mut commands: Commands,
-    mesh: Res<AsteroidMesh>,
-    mut asteroids: Query<&mut Transform, With<Asteroid>>,
-) {
-    for e in events.read() {
-        match e {
-            AsteroidUiEvent::Shuffle => {
-                asteroids.for_each_mut(|mut transform| {
-                    *transform = random_asteroid_transform();
-                });
-            }
-            AsteroidUiEvent::Add(n) => {
-                for _ in 0..*n {
-                    make_asteroid(&mut commands, &mesh)
-                }
             }
         }
     }
