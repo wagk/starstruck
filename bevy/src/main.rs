@@ -42,8 +42,12 @@ fn ui_level_selector(
             should_reload.send(AsteroidUiEvent::Shuffle);
         }
 
-        if ui.button("Add Asteroids").clicked() {
+        if ui.button("Add Asteroid").clicked() {
             should_reload.send(AsteroidUiEvent::Add(1usize));
+        }
+
+        if ui.button("Remove Asteroid").clicked() {
+            should_reload.send(AsteroidUiEvent::Remove(1usize));
         }
     });
 }

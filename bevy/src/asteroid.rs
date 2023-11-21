@@ -1,10 +1,13 @@
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
+use rand::{seq::IteratorRandom, thread_rng};
+
 #[derive(Event)]
 pub enum AsteroidUiEvent {
     Shuffle,
     Add(usize),
+    Remove(usize),
 }
 
 #[derive(Resource)]
@@ -56,19 +59,31 @@ pub fn maybe_regenerate_asteroids(
     mut events: EventReader<AsteroidUiEvent>,
     mut commands: Commands,
     mesh: Res<AsteroidMesh>,
-    mut asteroids: Query<&mut Transform, With<Asteroid>>,
+    mut asteroids: ParamSet<(
+        Query<&mut Transform, With<Asteroid>>,
+        Query<EntityRef, With<Asteroid>>,
+    )>,
 ) {
     for e in events.read() {
         match e {
             AsteroidUiEvent::Shuffle => {
-                asteroids.for_each_mut(|mut transform| {
-                    *transform = random_asteroid_transform();
-                });
+                asteroids
+                    .p0()
+                    .for_each_mut(|mut t| *t = random_asteroid_transform());
             }
             AsteroidUiEvent::Add(n) => {
                 for _ in 0..*n {
                     make_asteroid(&mut commands, &mesh)
                 }
+            }
+            AsteroidUiEvent::Remove(n) => {
+                let mut rng = thread_rng();
+                asteroids
+                    .p1()
+                    .into_iter()
+                    .choose_multiple(&mut rng, *n)
+                    .into_iter()
+                    .for_each(|ent| commands.entity(ent.id()).despawn());
             }
         }
     }
