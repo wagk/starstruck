@@ -3,6 +3,8 @@ use bevy_rapier3d::prelude::*;
 
 use rand::{seq::IteratorRandom, thread_rng};
 
+const NUM_INITIAL_ASTEROIDS: usize = 5;
+
 #[derive(Event)]
 pub enum AsteroidUiEvent {
     Shuffle,
@@ -45,12 +47,10 @@ pub fn spawn_asteroids(
     mut asteroid: ResMut<AsteroidMesh>,
     mut meshes: ResMut<Assets<Mesh>>,
 ) {
-    const NUM_ASTEROIDS: usize = 5;
-
     asteroid.0 = Some(meshes.add(shape::Cube::default().into()));
     let asteroid: Res<AsteroidMesh> = asteroid.into();
 
-    for _ in 0..NUM_ASTEROIDS {
+    for _ in 0..NUM_INITIAL_ASTEROIDS {
         make_asteroid(&mut commands, &asteroid);
     }
 }
