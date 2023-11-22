@@ -16,6 +16,11 @@ enum Level {
     Two,
 }
 
+#[derive(Component)]
+struct FollowerCamera {
+    offset: Vec3,
+}
+
 fn ui_level_selector(
     mut curr_stage: ResMut<State<Level>>,
     mut selected: ResMut<NextState<Level>>,
@@ -57,14 +62,8 @@ fn spawn_player_assets(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    // spawn a camera
-    commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(0., 6., 12.).looking_at(Vec3::new(0., 1., 0.), Vec3::Y),
-        ..default()
-    });
-
     // spawn a pill
-    let ent = commands.spawn((
+    let ship = commands.spawn((
         PbrBundle {
             mesh: meshes.add(shape::Cube::default().into()),
             material: materials.add(Color::AQUAMARINE.into()),
@@ -76,7 +75,18 @@ fn spawn_player_assets(
         ActiveEvents::COLLISION_EVENTS,
     ));
 
-    println!("Ship has entity ID of {:?}", ent.id());
+    println!("Ship has entity ID of {:?}", ship.id());
+
+    // spawn a camera
+    commands.spawn((
+        Camera3dBundle {
+            transform: Transform::from_xyz(0., 6., 12.).looking_at(Vec3::new(0., 1., 0.), Vec3::Y),
+            ..default()
+        },
+        FollowerCamera {
+            offset: Vec3::new(0., 1., 1.),
+        },
+    ));
 }
 
 fn display_collision_events(mut collision_events: EventReader<CollisionEvent>) {
@@ -90,6 +100,16 @@ fn display_collision_events(mut collision_events: EventReader<CollisionEvent>) {
             }
         }
     }
+}
+
+fn update_follower_camera(
+    ship: Query<&Transform, (With<PlayerShip>, Without<FollowerCamera>)>,
+    mut camera: Query<(&FollowerCamera, &mut Transform), With<FollowerCamera>>,
+) {
+    let (cam, mut cam_transform) = camera.single_mut();
+    let ship_transform = ship.single();
+
+    *cam_transform = ship_transform.looking_at(cam.offset, Vec3::Y);
 }
 
 fn main() {
@@ -106,6 +126,7 @@ fn main() {
         .add_systems(Startup, spawn_asteroids)
         .add_systems(Update, ui_level_selector)
         .add_systems(Update, ship_controller)
+        .add_systems(Update, update_follower_camera)
         .add_systems(Update, display_collision_events)
         .add_systems(Last, maybe_regenerate_asteroids)
         .run();
