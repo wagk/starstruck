@@ -1,4 +1,4 @@
-- [ ] 2023-11-15 Add button to debug menu to regenerate a scene.
+- [x] 2023-11-15 2023-11-22 Add button to debug menu to regenerate a scene.
 - [ ] 2023-11-15 Make the camera follow the ship.
 - [ ] 2023-11-17 Figure out what makes something a dynamic, kinematic, or static
       collider.
