@@ -62,11 +62,14 @@ fn spawn_player_assets(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
+    let player_transform = Transform::default();
+
     // spawn a pill
     let ship = commands.spawn((
         PbrBundle {
             mesh: meshes.add(shape::Cube::default().into()),
             material: materials.add(Color::AQUAMARINE.into()),
+            transform: player_transform.clone(),
             ..default()
         },
         PlayerShip,
@@ -78,14 +81,14 @@ fn spawn_player_assets(
     println!("Ship has entity ID of {:?}", ship.id());
 
     // spawn a camera
+    let offset = Vec3::new(0., 5., 5.);
     commands.spawn((
         Camera3dBundle {
-            transform: Transform::from_xyz(0., 6., 12.).looking_at(Vec3::new(0., 1., 0.), Vec3::Y),
+            transform: Transform::from_translation(player_transform.translation + offset.clone())
+                .looking_at(player_transform.translation, Vec3::Y),
             ..default()
         },
-        FollowerCamera {
-            offset: Vec3::new(0., 1., 1.),
-        },
+        FollowerCamera { offset },
     ));
 }
 
@@ -106,10 +109,12 @@ fn update_follower_camera(
     ship: Query<&Transform, (With<PlayerShip>, Without<FollowerCamera>)>,
     mut camera: Query<(&FollowerCamera, &mut Transform), With<FollowerCamera>>,
 ) {
-    let (cam, mut cam_transform) = camera.single_mut();
-    let ship_transform = ship.single();
+    let (FollowerCamera { offset }, mut cam_transform) = camera.single_mut();
+    let ship = ship.single();
 
-    *cam_transform = ship_transform.looking_at(cam.offset, Vec3::Y);
+    *cam_transform = cam_transform
+        .with_translation(ship.translation + *offset)
+        .looking_at(ship.translation, Vec3::Y);
 }
 
 fn main() {
@@ -126,7 +131,7 @@ fn main() {
         .add_systems(Startup, spawn_asteroids)
         .add_systems(Update, ui_level_selector)
         .add_systems(Update, ship_controller)
-        .add_systems(Update, update_follower_camera)
+        .add_systems(Update, update_follower_camera.after(ship_controller))
         .add_systems(Update, display_collision_events)
         .add_systems(Last, maybe_regenerate_asteroids)
         .run();
