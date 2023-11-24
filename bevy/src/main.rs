@@ -115,6 +115,8 @@ fn update_follower_camera(
     *cam_transform = cam_transform
         .with_translation(ship.translation + *offset)
         .looking_at(ship.translation, Vec3::Y);
+
+    cam_transform.rotate_around(ship.translation, ship.rotation);
 }
 
 fn main() {
