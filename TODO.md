@@ -2,6 +2,7 @@
 - [ ] 2023-11-15 Make the camera follow the ship.
 - [ ] 2023-11-17 Figure out what makes something a dynamic, kinematic, or static
       collider.
+- [ ] 2023-11-25 Add github actions
 
 -----
 
