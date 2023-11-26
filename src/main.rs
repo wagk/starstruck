@@ -119,6 +119,12 @@ fn update_follower_camera(
     cam_transform.rotate_around(ship.translation, ship.rotation);
 }
 
+fn mouse_controller(mut events: EventReader<CursorMoved>) {
+    for CursorMoved { position, .. } in events.read() {
+        println!("Mouse position: {:?}", position);
+    }
+}
+
 fn main() {
     App::new()
         .add_state::<Level>()
@@ -135,6 +141,7 @@ fn main() {
         .add_systems(Update, ship_controller)
         .add_systems(Update, update_follower_camera.after(ship_controller))
         .add_systems(Update, display_collision_events)
+        .add_systems(Update, mouse_controller)
         .add_systems(Last, maybe_regenerate_asteroids)
         .run();
 }
