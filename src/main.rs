@@ -69,7 +69,7 @@ fn spawn_player_assets(
         PbrBundle {
             mesh: meshes.add(shape::Cube::default().into()),
             material: materials.add(Color::AQUAMARINE.into()),
-            transform: player_transform.clone(),
+            transform: player_transform,
             ..default()
         },
         PlayerShip,
@@ -84,7 +84,7 @@ fn spawn_player_assets(
     let offset = Vec3::new(0., 5., 5.);
     commands.spawn((
         Camera3dBundle {
-            transform: Transform::from_translation(player_transform.translation + offset.clone())
+            transform: Transform::from_translation(player_transform.translation + offset)
                 .looking_at(player_transform.translation, Vec3::Y),
             ..default()
         },

@@ -55,6 +55,7 @@ pub fn spawn_asteroids(
     }
 }
 
+#[allow(clippy::type_complexity)] // `ParamSet`
 pub fn maybe_regenerate_asteroids(
     mut events: EventReader<AsteroidUiEvent>,
     mut commands: Commands,
