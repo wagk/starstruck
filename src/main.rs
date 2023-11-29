@@ -64,7 +64,6 @@ fn spawn_player_assets(
 ) {
     let player_transform = Transform::default();
 
-    // spawn a pill
     let ship = commands.spawn((
         PbrBundle {
             mesh: meshes.add(shape::Cube::default().into()),
