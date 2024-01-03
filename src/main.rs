@@ -10,6 +10,12 @@ use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier3d::prelude::*;
 
 #[derive(Debug, Clone, Eq, Hash, PartialEq, States, Default)]
+enum Gameplay {
+    #[default]
+    Running,
+}
+
+#[derive(Debug, Clone, Eq, Hash, PartialEq, States, Default)]
 enum Level {
     #[default]
     One,
@@ -131,6 +137,7 @@ fn mouse_controller(mut events: EventReader<CursorMoved>) {
 fn main() {
     App::new()
         .add_state::<Level>()
+        .add_state::<Gameplay>()
         .add_event::<AsteroidUiEvent>()
         .insert_resource(AsteroidMesh(None))
         .add_plugins(DefaultPlugins)
@@ -138,14 +145,23 @@ fn main() {
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugins(RapierDebugRenderPlugin::default())
         .add_plugins(WorldInspectorPlugin::new())
-        .add_systems(Startup, spawn_player_assets)
-        .add_systems(Startup, spawn_cursor)
-        .add_systems(Startup, spawn_asteroids)
+        // Populate worldstate
+        .add_systems(
+            Startup,
+            (spawn_player_assets, spawn_cursor, spawn_asteroids),
+        )
         .add_systems(Update, ui_level_selector)
-        .add_systems(Update, ship_controller)
-        .add_systems(Update, update_follower_camera.after(ship_controller))
-        .add_systems(Update, display_collision_events)
-        .add_systems(Update, mouse_controller)
+        // ship controller systems
+        .add_systems(
+            Update,
+            (
+                ship_controller,
+                update_follower_camera.after(ship_controller),
+            )
+                .run_if(in_state(Gameplay::Running)),
+        )
+        // debug information
+        .add_systems(Update, (mouse_controller, display_collision_events))
         .add_systems(Last, maybe_regenerate_asteroids)
         .run();
 }
