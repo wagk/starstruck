@@ -1,5 +1,6 @@
 mod asteroid;
 mod ship;
+mod voronoi;
 
 use asteroid::{maybe_regenerate_asteroids, spawn_asteroids, AsteroidMesh, AsteroidUiEvent};
 use ship::{ship_controller, PlayerShip};
