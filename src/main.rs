@@ -1,4 +1,5 @@
 mod asteroid;
+mod map;
 mod ship;
 mod voronoi;
 
@@ -102,6 +103,10 @@ fn spawn_cursor(mut commands: Commands, mut _meshes: ResMut<Assets<Mesh>>) {
     commands.spawn(SpriteBundle { ..default() });
 }
 
+fn spawn_map(mut _commands: Commands) {
+    // TODO (pangt):
+}
+
 fn display_collision_events(mut collision_events: EventReader<CollisionEvent>) {
     for e in collision_events.read() {
         match e {
@@ -149,7 +154,12 @@ fn main() {
         // Populate worldstate
         .add_systems(
             Startup,
-            (spawn_player_assets, spawn_cursor, spawn_asteroids),
+            (
+                spawn_player_assets,
+                spawn_cursor,
+                spawn_asteroids,
+                spawn_map,
+            ),
         )
         .add_systems(Update, ui_level_selector)
         // ship controller systems
