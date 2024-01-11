@@ -1,16 +1,18 @@
 //! Map generation
+//!
+//! Consider implementing something like [Wave Function Collapse][1]. Sounds
+//! cool.
+//!
+//! [1]: https://robertheaton.com/2018/12/17/wavefunction-collapse-algorithm/
 
-#[allow(dead_code)]
-pub struct Map;
+// Design thoughts about how the map should be?
 
-#[allow(dead_code)]
-pub struct Seed;
-
-pub trait MapGenerator {
-    fn generate(params: Seed) -> Map;
+pub struct WorldParams {
+    num_planets: usize,
 }
 
-// TODO (pangt): default map generator, flesh out `Seed`, and etc.
-//
-// I think initially just randomly spawning a group of points and then giving
-// each of them a sphere sounds like a good idea
+pub struct World;
+
+pub fn generate_world(_params: WorldParams) -> World {
+    todo!()
+}
