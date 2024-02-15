@@ -7,12 +7,41 @@
 
 // Design thoughts about how the map should be?
 
-pub struct WorldParams {
-    num_planets: usize,
+pub trait Seed {
+    type Param;
+    type World;
+
+    fn generate(_param: Self::Param) -> Self::World;
 }
 
-pub struct World;
+/// Simple tiled gridd
+struct TileMap {}
 
-pub fn generate_world(_params: WorldParams) -> World {
-    todo!()
+#[allow(dead_code)]
+struct TileMapParams {
+    max_length: usize,
+    max_width: usize,
+    fill: TileMapFillType,
+    poi_list: Vec<PointOfInterest>,
+}
+
+// Scaffolding for the generation algorithm.
+enum PointOfInterest {}
+
+#[allow(dead_code)]
+enum TileMapFillType {
+    // Fill out only areas nearby points of interests, and let the rest generate
+    // later
+    Dynamic,
+    // Fill out every area irregardless.
+    Full,
+}
+
+impl Seed for TileMap {
+    type Param = TileMapParams;
+    type World = TileMap;
+
+    fn generate(_param: Self::Param) -> Self::World {
+        todo!()
+    }
 }
