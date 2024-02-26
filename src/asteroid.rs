@@ -47,7 +47,7 @@ pub fn spawn_asteroids(
     mut asteroid: ResMut<AsteroidMesh>,
     mut meshes: ResMut<Assets<Mesh>>,
 ) {
-    asteroid.0 = Some(meshes.add(shape::Cube::default().into()));
+    asteroid.0 = Some(meshes.add(Cuboid::default()));
     let asteroid: Res<AsteroidMesh> = asteroid.into();
 
     for _ in 0..NUM_INITIAL_ASTEROIDS {
@@ -70,7 +70,8 @@ pub fn maybe_regenerate_asteroids(
             AsteroidUiEvent::Shuffle => {
                 asteroids
                     .p0()
-                    .for_each_mut(|mut t| *t = random_asteroid_transform());
+                    .iter_mut()
+                    .for_each(|mut t| *t = random_asteroid_transform());
             }
             AsteroidUiEvent::Add(n) => {
                 for _ in 0..*n {

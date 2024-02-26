@@ -74,8 +74,8 @@ fn spawn_player_assets(
 
     let ship = commands.spawn((
         PbrBundle {
-            mesh: meshes.add(shape::Cube::default().into()),
-            material: materials.add(Color::AQUAMARINE.into()),
+            mesh: meshes.add(Cuboid::default()),
+            material: materials.add(Color::AQUAMARINE),
             transform: player_transform,
             ..default()
         },
@@ -142,8 +142,8 @@ fn mouse_controller(mut events: EventReader<CursorMoved>) {
 
 fn main() {
     App::new()
-        .add_state::<Level>()
-        .add_state::<Gameplay>()
+        .init_state::<Level>()
+        .init_state::<Gameplay>()
         .add_event::<AsteroidUiEvent>()
         .insert_resource(AsteroidMesh(None))
         .add_plugins(DefaultPlugins)
